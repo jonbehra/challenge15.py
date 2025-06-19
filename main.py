@@ -1,60 +1,49 @@
-import pandas as pd
-import matplotlib.pyplot as plt
-import kagglehub
+import pandas as pd; import matplotlib.pyplot as plt; import kagglehub
 
-path = kagglehub.dataset_download("risakashiwabara/tokyo-weatherdata")
-print("Rruga e dataset-it:", path)
+# Shkarkimi i të dhënave
+dataset_path = kagglehub.dataset_download("risakashiwabara/tokyo-weatherdata")
+print("Rruga e dataset-it:", dataset_path)
 
-df = pd.read_csv(f"{path}/weather_tokyo_data.csv")
+# Leximi i të dhënave
+df = pd.read_csv(f"{dataset_path}/weather_tokyo_data.csv")
 
-df['Date'] = pd.to_datetime(df['year'].astype(str) + '-' + df['day'], format='%Y-%m/%d')
-df.columns = [item.strip() for item in df.columns]
-df['temperature'] = df['temperature'].apply(lambda x: float(x.replace('(', '-').replace(')', '')))
+# Konvertimi i datës dhe pastrimi i kolonave
+df.columns = [col.strip() for col in df.columns]
+df["Date"] = pd.to_datetime(df["year"].astype(str) + "-" + df["day"], format="%Y-%m/%d")
+df["temperature"] = df["temperature"].map(lambda val: float(val.replace("(", "-").replace(")", "")))
 
-df['Month'] = df['Date'].dt.month
-monthly_avg_temp = df.groupby('Month')['temperature'].mean()
+# Mesatarja mujore
+df["Month"] = df["Date"].dt.month
+avg_temp_monthly = df.groupby("Month")["temperature"].mean()
 
-plt.figure(figsize=(10, 6))
-monthly_avg_temp.plot(kind='bar', color='skyblue')
-plt.title('Temperatura mesatare mujore në Tokio')
-plt.xlabel('Muaji')
-plt.ylabel('Temperatura mesatare (°C)')
+# Grafiku i mesatares mujore
+plt.figure(figsize=(10, 6)); avg_temp_monthly.plot(kind="bar", color="skyblue")
+plt.title("Temperatura mesatare mujore në Tokio")
+plt.xlabel("Muaji"); plt.ylabel("Temperatura mesatare (°C)")
 plt.xticks(ticks=range(12), labels=["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], rotation=45)
-plt.tight_layout()
-plt.show()
+plt.tight_layout(); plt.show()
 
+# Grafiku i trendit ditor
 plt.figure(figsize=(12, 6))
-plt.plot(df['Date'], df['temperature'], color='orange', linewidth=1)
-plt.title('Trendet e Temperaturës në Tokio')
-plt.xlabel('Data')
-plt.ylabel('Temperatura (°C)')
-plt.xticks(rotation=45)
-plt.tight_layout()
-plt.show()
+plt.plot(df["Date"], df["temperature"], color="orange", linewidth=1)
+plt.title("Trendet e Temperaturës në Tokio")
+plt.xlabel("Data"); plt.ylabel("Temperatura (°C)")
+plt.xticks(rotation=45); plt.tight_layout(); plt.show()
 
-avg_temperature = df['temperature'].mean()
-print(f"\nTemperatura mesatare për të gjithë datasetin: {avg_temperature:.2f}°C")
+# Temperatura mesatare totale
+mesatarja = df["temperature"].mean()
+print(f"\nTemperatura mesatare për të gjithë datasetin: {mesatarja:.2f}°C")
 
-hottest_day = df.loc[df['temperature'].idxmax()]
-coldest_day = df.loc[df['temperature'].idxmin()]
+# Ditët ekstreme
+max_dita = df.loc[df["temperature"].idxmax()]
+min_dita = df.loc[df["temperature"].idxmin()]
+print("\nDita më e nxehtë:"); print(max_dita)
+print("\nDita më e ftohtë:"); print(min_dita)
 
-print("\nDita më e nxehtë:")
-print(hottest_day)
-print("\nDita më e ftohtë:")
-print(coldest_day)
-
-seasons = {
-    'Pranvera': [3, 4, 5],
-    'Vera': [6, 7, 8],
-    'Vjeshta': [9, 10, 11],
-    'Dimri': [12, 1, 2]
-}
-
-seasonal_avg_temp = {}
-for season, months in seasons.items():
-    seasonal_data = df[df['Month'].isin(months)]
-    seasonal_avg_temp[season] = seasonal_data['temperature'].mean()
+# Mesataret sezonale
+sezonet = {"Pranvera": [3, 4, 5], "Vera": [6, 7, 8], "Vjeshta": [9, 10, 11], "Dimri": [12, 1, 2]}
+mesataret_sezonale = {sezon: df[df["Month"].isin(muajt)]["temperature"].mean() for sezon, muajt in sezonet.items()}
 
 print("\nTemperaturat mesatare për çdo sezon:")
-for season, temp in seasonal_avg_temp.items():
-    print(f"{season}: {temp:.2f}°C")
+for sez, temp in mesataret_sezonale.items():
+    print(f"{sez}: {temp:.2f}°C")
